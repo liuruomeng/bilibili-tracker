@@ -1,4 +1,4 @@
-# Bilibili Weekly Must-Watch Collector
+# Bilibili Weekly Popular Data Collection
 
 Collects metadata, comments (including nested replies), and bullet comments from Bilibili's weekly must-watch videos.
 
