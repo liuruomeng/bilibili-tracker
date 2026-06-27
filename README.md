@@ -43,3 +43,6 @@ python crawler.py retry # Reset failed tasks
 - `BILI_WORKERS`: Number of concurrent threads, default `2`
 
 - `BILI_LOG`: Log path, default `bili.log`
+
+## Disclaimer
+This project is for educational and research purposes only. Use at your own risk.
