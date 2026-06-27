@@ -10,8 +10,20 @@ cookie.txt
 *.sqlite
 *.sqlite3
 
+# 备份文件（DB 快照 / 代码备份，勿入库）
+bili.db.bak-*
+*.bak.*
+
+# macOS 伴生元数据
+._*
+.DS_Store
+
 # 日志
 *.log
+
+# 封面图（大量图片，勿入库）
+covers/
+covers_failed.txt
 
 # Python
 __pycache__/
