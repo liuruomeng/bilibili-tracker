@@ -1041,6 +1041,10 @@ class Crawler:
 
     # ---- 单视频 ----
     def crawl_one(self, bvid: str):
+        # ★ 已收到停止信号：直接空转返回，绝不处理、绝不误标 done
+        #   （线程池 shutdown 会跑完队列里剩余任务，这里挡住，防止"假完成"）
+        if STOP.is_set():
+            return
         v = self.db.get_video(bvid)
         if v is None or v["status"] == "done":
             return
@@ -1064,6 +1068,13 @@ class Crawler:
                 log.warning("[%s] danmaku_total_seg 为空，从时长估算：%d 段", bvid, total)
             if done < total:
                 self._crawl_danmaku(v)
+
+
+            # ★ 关键修复：若处理途中收到停止信号，子任务会提前空返回（评论/弹幕未真正采集），
+            #   此时绝不能标 done，否则会"假完成"。回退为 pending，下次重新采集。
+            if STOP.is_set():
+                self.db.update_video(bvid, status="pending")
+                return
 
 
             self.db.update_video(bvid, status="done")
@@ -1322,6 +1333,12 @@ class Crawler:
                         log.error("任务异常 %s: %s", futs[f], e)
             except KeyboardInterrupt:
                 STOP.set()
+            finally:
+                # ★ 停止时取消尚未开始的任务，避免退出时 shutdown(wait=True)
+                #   把整条队列跑完（配合 crawl_one 的 STOP 检查，双重防止"假完成"）
+                if STOP.is_set():
+                    for fut in futs:
+                        fut.cancel()
 
 
     def crawl_meta(self):
